@@ -45,7 +45,7 @@ RUN apt-get update -y && apt-get install -y \
     bash-completion \
     cmake
 
-#Compile and install OCI driver for Oracle
+# Prepare OCI driver for GDAL
 RUN cd src && unzip '*.zip' \
     && mkdir -p /home/niper/software/oracle \
     && cp -R instantclient_12_2 /home/niper/software/oracle \
