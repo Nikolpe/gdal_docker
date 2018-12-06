@@ -1,8 +1,3 @@
-##
-# geographica/gdal2
-#
-# This creates an Ubuntu derived base image that installs GDAL 2.
-#
 # Ubuntu 18.04 Bionic Beaver
 FROM ubuntu:bionic
 
