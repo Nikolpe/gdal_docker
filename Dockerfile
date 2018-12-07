@@ -9,9 +9,11 @@ ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ORACLE_HOME
 ENV ROOTDIR /usr/local/
 ENV GDAL_VERSION 2.3.2
 ENV OPENJPEG_VERSION 2.3.0
+ENV ECW_HOME=/home/niper/software/ecw 
 
-# Load assets
+
 WORKDIR $ROOTDIR/
+ADD http://download.osgeo.org/geos/geos-3.7.0.tar.bz2 $ROOTDIR/src/
 # Adding zip files for instant client
 ADD instantclient-basic-linux.x64-12.2.0.1.0.zip  $ROOTDIR/src/
 ADD instantclient-sqlplus-linux.x64-12.2.0.1.0.zip  $ROOTDIR/src/
@@ -19,10 +21,13 @@ ADD instantclient-sdk-linux.x64-12.2.0.1.0.zip  $ROOTDIR/src/
 # Use wget or curl instead (docker best practice)
 ADD http://download.osgeo.org/gdal/${GDAL_VERSION}/gdal-${GDAL_VERSION}.tar.gz $ROOTDIR/src/
 ADD https://github.com/uclouvain/openjpeg/archive/v${OPENJPEG_VERSION}.tar.gz $ROOTDIR/src/openjpeg-${OPENJPEG_VERSION}.tar.gz
+# add libecwj2-3.3
+ADD libecwj2-3.3-2006-09-06.zip $ROOTDIR/src/
 
 # Install basic dependencies
 RUN apt-get update -y && apt-get install -y \
     libaio1 \
+    bzip2 \ 
     unzip \
     software-properties-common \
     build-essential \
@@ -45,6 +50,16 @@ RUN apt-get update -y && apt-get install -y \
     bash-completion \
     cmake
 
+#Compile with geos
+#RUN cd src && bunzip2 geos-3.7.0.tar.bz2 \
+#    && tar xvf geos-3.7.0.tar \
+#    && cd geos-3.7.0 \
+#    && ./configure \
+#    && make -j 12 \
+#    && make install \
+#    && make clean \
+#    && ldconfig 
+
 # Prepare OCI driver for GDAL
 RUN cd src && unzip '*.zip' \
     && mkdir -p /home/niper/software/oracle \
@@ -55,6 +70,12 @@ RUN cd src && unzip '*.zip' \
     && mkdir lib \
     && for i in $(ls "$ORACLE_HOME"/*.so); do ln -s $i "$ORACLE_HOME"/lib; done
     
+# compile and install ECW
+RUN cd src && unzip -o libecwj2-3.3-2006-09-06.zip \
+    && cd libecwj2-3.3 \
+    && ./configure --prefix=/usr/local \
+    && make -j 12 \
+    && make install 
 
 # Compile and install OpenJPEG
 RUN cd src && tar -xvf openjpeg-${OPENJPEG_VERSION}.tar.gz && cd openjpeg-${OPENJPEG_VERSION}/ \
@@ -65,7 +86,17 @@ RUN cd src && tar -xvf openjpeg-${OPENJPEG_VERSION}.tar.gz && cd openjpeg-${OPEN
 
 # Compile and install GDAL
 RUN cd src && tar -xvf gdal-${GDAL_VERSION}.tar.gz && cd gdal-${GDAL_VERSION} \
-    && ./configure --with-python --with-spatialite --with-pg --with-curl --with-openjpeg --with-oci=yes --with-oci-include=/home/niper/software/oracle/instantclient_12_2/sdk/include --with-oci-lib=/home/niper/software/oracle/instantclient_12_2 \
+    && ./configure \ 
+        --with-python \
+        --with-geos=yes \ 
+        --with-spatialite \ 
+        --with-ecw=/usr/local \
+        --with-pg \
+        --with-curl \ 
+        --with-openjpeg \
+        --with-oci=yes \
+        --with-oci-include=/home/niper/software/oracle/instantclient_12_2/sdk/include \
+        --with-oci-lib=/home/niper/software/oracle/instantclient_12_2 \
     && make -j 12 && make install && make clean && ldconfig \
     && apt-get update -y \
     && apt-get remove -y --purge build-essential \
