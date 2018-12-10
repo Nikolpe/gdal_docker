@@ -13,11 +13,14 @@ ENV ECW_HOME=/home/niper/software/ecw
 
 
 WORKDIR $ROOTDIR/
+
 ADD http://download.osgeo.org/geos/geos-3.7.0.tar.bz2 $ROOTDIR/src/
+
 # Adding zip files for instant client
-ADD instantclient-basic-linux.x64-12.2.0.1.0.zip  $ROOTDIR/src/
-ADD instantclient-sqlplus-linux.x64-12.2.0.1.0.zip  $ROOTDIR/src/
-ADD instantclient-sdk-linux.x64-12.2.0.1.0.zip  $ROOTDIR/src/
+COPY instantclient-basic-linux.x64-12.2.0.1.0.zip  $ROOTDIR/src/
+COPY instantclient-sqlplus-linux.x64-12.2.0.1.0.zip  $ROOTDIR/src/
+COPY instantclient-sdk-linux.x64-12.2.0.1.0.zip  $ROOTDIR/src/
+
 # Use wget or curl instead (docker best practice)
 ADD http://download.osgeo.org/gdal/${GDAL_VERSION}/gdal-${GDAL_VERSION}.tar.gz $ROOTDIR/src/
 ADD https://github.com/uclouvain/openjpeg/archive/v${OPENJPEG_VERSION}.tar.gz $ROOTDIR/src/openjpeg-${OPENJPEG_VERSION}.tar.gz
@@ -51,14 +54,12 @@ RUN apt-get update -y && apt-get install -y \
     cmake
 
 #Compile with geos
-#RUN cd src && bunzip2 geos-3.7.0.tar.bz2 \
-#    && tar xvf geos-3.7.0.tar \
-#    && cd geos-3.7.0 \
-#    && ./configure \
-#    && make -j 12 \
-#    && make install \
-#    && make clean \
-#    && ldconfig 
+RUN cd src && bunzip2 -f geos-3.7.0.tar.bz2 \
+    && tar xvf geos-3.7.0.tar \
+    && cd geos-3.7.0 \
+    && ./configure \
+    && make -j 12 \
+    && make install 
 
 # Prepare OCI driver for GDAL
 RUN cd src && unzip '*.zip' \
