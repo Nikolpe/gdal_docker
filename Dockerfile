@@ -25,7 +25,7 @@ COPY instantclient-sdk-linux.x64-12.2.0.1.0.zip  $ROOTDIR/src/
 ADD http://download.osgeo.org/gdal/${GDAL_VERSION}/gdal-${GDAL_VERSION}.tar.gz $ROOTDIR/src/
 
 # openjpeg
-COPY ${OPENJPEG_VERSION}.tar.gz $ROOTDIR/src/openjpeg-${OPENJPEG_VERSION}.tar.gz
+COPY v2.3.0.tar.gz $ROOTDIR/src/openjpeg-${OPENJPEG_VERSION}.tar.gz
 
 # libecwj2-3.3
 COPY libecwj2-3.3-2006-09-06.zip $ROOTDIR/src/
